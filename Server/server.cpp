@@ -185,7 +185,6 @@ int main()
 							SendData.Num = Client.second.Num;
 							string JSONString = SendData.ToString();
 
-							// 기존 브로드캐스트 코드 활용
 							for (int j = 0; j < (int)ReadSockets.fd_count; ++j) {
 								if (ReadSockets.fd_array[j] != ListenSocket) {
 									PacketSize = (unsigned short)JSONString.length();
