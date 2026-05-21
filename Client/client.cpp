@@ -56,8 +56,8 @@ unsigned WINAPI RecvThread(void* Argument)
 		LocSendPacket Data;
 		Data.Parse(RecvBuffer);
 
-
-		cout << Data.UserID << Data.Num << " : " << Data.X << " " << Data.Y << endl;
+		PrintCanvas(Data.Num, Data.UserID, Data.X, Data.Y);
+		//cout << Data.UserID << Data.Num << " : " << Data.X << " " << Data.Y << endl;
 	}
 
 

@@ -7,6 +7,8 @@
 #include <map>
 #include <LocRecvPacket.h>
 #include <LocSendPacket.h>
+#include <algorithm>
+using namespace std;
 
 #pragma comment(lib, "ws2_32")
 #pragma comment(lib, "NetCommon")
@@ -15,12 +17,7 @@ using namespace std;
 
 char Buffer[1024] = { 0, };
 
-struct ClientData {
-	string ID;
-	int Num;
-	int X;
-	int Y;
-};
+
 
 //blocking, synchrous, multiplexing(polling)
 int main()
@@ -137,7 +134,7 @@ int main()
 						getpeername(ReadSockets.fd_array[i], (SOCKADDR*)&ClientSockAddr, &ClientSockAddrLength);
 						//맵에 소켓의 inet_ntoa(ClientSockAddr.sin_addr)값으로 찾아서 계산하고? 저장한 다음?
 						string IP = inet_ntoa(ClientSockAddr.sin_addr);
-						cout << "client(" << IP<< " / " << Data.UserID << Data.Num;
+						//cout << "client(" << IP<< " / " << Data.UserID << Data.Num;
 						Clients[ReadSockets.fd_array[i]].ID = Data.UserID;
 						for (auto& Client : Clients)
 						{
@@ -163,29 +160,32 @@ int main()
 									Client.second.X += 1;
 									break;
 								}
-								//Data.ID = IP;
-								//Data.X = Client.second.X;
-								//Data.Y = Client.second.Y;
+								Client.second.X = max(0, min(Client.second.X, 10 - 1));
+								Client.second.Y = max(0, min(Client.second.Y, 10 - 1));
 								
 							}
 							else {
 								// 이미 있는 클라이언트
 							}
+
+							//Clients[ReadSockets.fd_array[i]].
 						}
 						//Clients에 저장한 값을 출력
-						cout << ") " << Clients[ReadSockets.fd_array[i]].X << "," << Clients[ReadSockets.fd_array[i]].Y << " Move" << endl;
+						//cout << ") " << Clients[ReadSockets.fd_array[i]].X << "," << Clients[ReadSockets.fd_array[i]].Y << " Move" << endl;
+						PrintCanvas(Clients);
 						
 						//모든 접속한 유저한테 전달
-						for (auto& Client : Clients) {
-							// 각 클라이언트 위치 JSON 만들기
-							LocSendPacket SendData;
-							SendData.UserID = Client.second.ID;
-							SendData.X = Client.second.X;
-							SendData.Y = Client.second.Y;
-							SendData.Num = Client.second.Num;
-							string JSONString = SendData.ToString();
+						for (int j = 0; j < (int)ReadSockets.fd_count; ++j) {
+							for (auto& Client : Clients) {
+								// 각 클라이언트 위치 JSON 만들기
+								LocSendPacket SendData;
+								SendData.UserID = Client.second.ID;
+								SendData.X = Client.second.X;
+								SendData.Y = Client.second.Y;
+								SendData.Num = Client.second.Num;
+								string JSONString = SendData.ToString();
 
-							for (int j = 0; j < (int)ReadSockets.fd_count; ++j) {
+							
 								if (ReadSockets.fd_array[j] != ListenSocket) {
 									PacketSize = (unsigned short)JSONString.length();
 									PacketSize = htons(PacketSize);
