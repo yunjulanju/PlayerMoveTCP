@@ -25,7 +25,7 @@ struct ClientData {
 //blocking, synchrous, multiplexing(polling)
 int main()
 {
-	map<string, ClientData> Clients;
+	map<SOCKET, ClientData> Clients;
 	int count = 0;
 	cout << "server start" << endl;
 
@@ -95,7 +95,7 @@ int main()
 					Data.Y = 0;
 					Data.Num = count;
 					count++;
-					Clients[IP] = Data;
+					Clients[ClientSocket] = Data;
 
 					FD_SET(ClientSocket, &ReadSockets);
 				}
@@ -138,10 +138,10 @@ int main()
 						//맵에 소켓의 inet_ntoa(ClientSockAddr.sin_addr)값으로 찾아서 계산하고? 저장한 다음?
 						string IP = inet_ntoa(ClientSockAddr.sin_addr);
 						cout << "client(" << IP << " / " << Data.UserID;
-						Clients[IP].ID = Data.UserID;
+						Clients[ReadSockets.fd_array[i]].ID = Data.UserID;
 						for (auto& Client : Clients)
 						{
-							if (Client.first == IP)
+							if (Client.first == ReadSockets.fd_array[i])
 							{
 								//Client.second.ID = Data.UserID;
 								char input = Data.Input;
@@ -173,7 +173,7 @@ int main()
 							}
 						}
 						//Clients에 저장한 값을 출력
-						cout << ") " << Clients[IP].X << "," << Clients[IP].Y << " Move" << endl;
+						cout << ") " << Clients[ReadSockets.fd_array[i]].X << "," << Clients[ReadSockets.fd_array[i]].Y << " Move" << endl;
 						
 						//모든 접속한 유저한테 전달
 						for (auto& Client : Clients) {
