@@ -57,7 +57,7 @@ unsigned WINAPI RecvThread(void* Argument)
 		Data.Parse(RecvBuffer);
 
 
-		cout << Data.UserID << " : " << Data.X << " " << Data.Y << endl;
+		cout << Data.UserID << Data.Num << " : " << Data.X << " " << Data.Y << endl;
 	}
 
 

@@ -137,7 +137,7 @@ int main()
 						getpeername(ReadSockets.fd_array[i], (SOCKADDR*)&ClientSockAddr, &ClientSockAddrLength);
 						//맵에 소켓의 inet_ntoa(ClientSockAddr.sin_addr)값으로 찾아서 계산하고? 저장한 다음?
 						string IP = inet_ntoa(ClientSockAddr.sin_addr);
-						cout << "client(" << IP << " / " << Data.UserID;
+						cout << "client(" << IP<< " / " << Data.UserID << Data.Num;
 						Clients[ReadSockets.fd_array[i]].ID = Data.UserID;
 						for (auto& Client : Clients)
 						{
