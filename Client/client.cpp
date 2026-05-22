@@ -191,62 +191,7 @@ unsigned WINAPI SendThread(void* Argument)
 
 unsigned WINAPI SDLThread(void* Argument)
 {
-	bool running = true;
-	SDL_Event event;
-
-	//책임은 사용하는 놈이 진다.
-	SOCKET ServerSocket = *(SOCKET*)Argument;
-
-	while (running)
-	{
-		// SDL 이벤트 처리 (필수)
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT)
-			{
-				running = false;
-			}
-			else if (event.type == SDL_KEYDOWN)
-			{
-				int KeyCode = 0;
-
-				switch (event.key.keysym.sym)
-				{
-				case SDLK_w: KeyCode = 'w'; break;
-				case SDLK_a: KeyCode = 'a'; break;
-				case SDLK_s: KeyCode = 's'; break;
-				case SDLK_d: KeyCode = 'd'; break;
-				}
-
-				if (KeyCode != 0)
-				{
-					C2S_Move MoveData;
-					MoveData.ClientSocket = MyClientID;
-					MoveData.Direction = KeyCode;
-
-					Header DataHeader;
-					DataHeader.MakeHeader((int)(MoveData.ToString().length()), EPacketType::C2S_Move);
-					SendAll(ServerSocket, (char*)&DataHeader, HeaderSize);
-					SendAll(ServerSocket, MoveData.ToString().c_str(), (int)(MoveData.ToString().length()));
-				}
-			}
-		}
-
-		// 렌더링
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
-
-		// 플레이어 그리기
-		for (auto& Player : MySessionManager.SessionList)
-		{
-			SDL_Rect rect = { Player.X * 20, Player.Y * 20, 20, 20 };
-			//cout << Player.r << Player.g<< Player.b << Player.a << endl;
-			SDL_SetRenderDrawColor(renderer, Player.r, Player.g, Player.b, Player.a);
-			SDL_RenderFillRect(renderer, &rect);
-		}
-
-		SDL_RenderPresent(renderer);
-	}
+	
 
 	return 0;
 }
@@ -314,13 +259,64 @@ int main(int argc, char* argv[])
 	//nonblocking, asynchrous
 	ThreadHandles[0] = (HANDLE)_beginthreadex(0, 0, RecvThread, &ServerSocket, /*CREATE_SUSPENDED*/0, 0);
 	ThreadHandles[1] = (HANDLE)_beginthreadex(0, 0, SendThread, &ServerSocket, /*CREATE_SUSPENDED*/0, 0);
-	ThreadHandles[2] = (HANDLE)_beginthreadex(0, 0, SDLThread, &ServerSocket, /*CREATE_SUSPENDED*/0, 0);
 	//ResumeThread(ThreadHandles[0]);
 	//ResumeThread(ThreadHandles[1]);
 	//SuspendThread(ThreadHandles[0]);
 	//SuspendThread(ThreadHandles[1]);
 
-	
+	bool running = true;
+	SDL_Event event;
+
+	while (running)
+	{
+		// SDL 이벤트 처리 (필수)
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT)
+			{
+				running = false;
+			}
+			else if (event.type == SDL_KEYDOWN)
+			{
+				int KeyCode = 0;
+
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_w: KeyCode = 'w'; break;
+				case SDLK_a: KeyCode = 'a'; break;
+				case SDLK_s: KeyCode = 's'; break;
+				case SDLK_d: KeyCode = 'd'; break;
+				}
+
+				if (KeyCode != 0)
+				{
+					C2S_Move MoveData;
+					MoveData.ClientSocket = MyClientID;
+					MoveData.Direction = KeyCode;
+
+					Header DataHeader;
+					DataHeader.MakeHeader((int)(MoveData.ToString().length()), EPacketType::C2S_Move);
+					SendAll(ServerSocket, (char*)&DataHeader, HeaderSize);
+					SendAll(ServerSocket, MoveData.ToString().c_str(), (int)(MoveData.ToString().length()));
+				}
+			}
+		}
+
+		// 렌더링
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
+
+		// 플레이어 그리기
+		for (auto& Player : MySessionManager.SessionList)
+		{
+			SDL_Rect rect = { Player.X * 20, Player.Y * 20, 20, 20 };
+			//cout << Player.r << Player.g<< Player.b << Player.a << endl;
+			SDL_SetRenderDrawColor(renderer, Player.r, Player.g, Player.b, Player.a);
+			SDL_RenderFillRect(renderer, &rect);
+		}
+
+		SDL_RenderPresent(renderer);
+	}
 	
 
 	//blocking
@@ -338,7 +334,6 @@ int main(int argc, char* argv[])
 
 	CloseHandle(ThreadHandles[0]);
 	CloseHandle(ThreadHandles[1]);
-	CloseHandle(ThreadHandles[2]);
 
 	WSACleanup();
 
